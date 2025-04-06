@@ -40,3 +40,15 @@ func GetClimbs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(paginatedResponse)
 }
+
+func GetLayouts(w http.ResponseWriter, r *http.Request) {
+	// get all layout & sizes
+	layouts, err := models.GetAllProductSizeLayoutSets()
+	if err != nil {
+		http.Error(w, "Failed to retrieve layouts: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(layouts)
+}

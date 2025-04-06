@@ -19,6 +19,7 @@ func SetupRoutes() *chi.Mux {
 	// Define routes
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/climbs", handlers.GetClimbs)
+		r.Get("/layouts", handlers.GetLayouts)
 	})
 
 	return r

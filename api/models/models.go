@@ -23,6 +23,23 @@ type Climb struct {
 	CreatedAt      string `json:"created_at" gorm:"column:created_at"`
 }
 
+func (Climb) TableName() string {
+	return "climbs"
+}
+
+type ProductSizeLayoutSet struct {
+	ID            uint   `json:"id" gorm:"column:id;primaryKey"`
+	ProductSizeID uint   `json:"product_size_id" gorm:"column:product_size_id"`
+	LayoutID      uint   `json:"layout_id" gorm:"column:layout_id"`
+	SetID         uint   `json:"set_id" gorm:"column:set_id"`
+	ImageFilename string `json:"image_filename" gorm:"column:image_filename"`
+	IsListed      bool   `json:"is_listed" gorm:"column:is_listed"`
+}
+
+func (ProductSizeLayoutSet) TableName() string {
+	return "product_sizes_layouts_sets"
+}
+
 // the paginated response for the general climbing data
 type PaginatedClimbsResponse struct {
 	Climbs     []Climb `json:"climbs"`
@@ -60,4 +77,10 @@ func GetPaginatedClimbs(page, pageSize int) (*PaginatedClimbsResponse, error) {
 		PageSize:   pageSize,
 		TotalPages: totalPages,
 	}, nil
+}
+
+func GetAllProductSizeLayoutSets() ([]ProductSizeLayoutSet, error) {
+	var layouts []ProductSizeLayoutSet
+	result := config.KilterDB.Find(&layouts)
+	return layouts, result.Error
 }
