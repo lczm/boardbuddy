@@ -10,10 +10,10 @@ type Climb struct {
 	Name           string `json:"name" gorm:"column:name"`
 	Description    string `json:"description" gorm:"column:description"`
 	Hsm            uint   `json:"hsm" gorm:"column:hsm"`
-	EdgeLeft       uint   `json:"edge_left" gorm:"column:edge_left"`
-	EdgeRight      uint   `json:"edge_right" gorm:"column:edge_right"`
-	EdgeBottom     uint   `json:"edge_bottom" gorm:"column:edge_bottom"`
-	EdgeTop        uint   `json:"edge_top" gorm:"column:edge_top"`
+	EdgeLeft       int    `json:"edge_left" gorm:"column:edge_left"`
+	EdgeRight      int    `json:"edge_right" gorm:"column:edge_right"`
+	EdgeBottom     int    `json:"edge_bottom" gorm:"column:edge_bottom"`
+	EdgeTop        int    `json:"edge_top" gorm:"column:edge_top"`
 	Angle          *int   `json:"angle" gorm:"column:angle"`
 	FramesCount    uint   `json:"frames_count" gorm:"column:frames_count;default:1"`
 	FramesPace     uint   `json:"frames_pace" gorm:"column:frames_pace;default:0"`
