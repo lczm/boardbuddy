@@ -2,8 +2,6 @@ module github.com/lczm/boardbuddy/api
 
 go 1.23.0
 
-toolchain go1.24.1
-
 require (
 	github.com/go-chi/chi/v5 v5.2.1
 	gorm.io/driver/sqlite v1.5.7
