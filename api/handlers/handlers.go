@@ -8,47 +8,53 @@ import (
 	"github.com/lczm/boardbuddy/api/models"
 )
 
+// GetClimbs handles GET /api/climbs?page=&page_size=&name=&board_id=
 func GetClimbs(w http.ResponseWriter, r *http.Request) {
-	// try to get the query params if they exist
-	pageStr := r.URL.Query().Get("page")
-	pageSizeStr := r.URL.Query().Get("page_size")
+	q := r.URL.Query()
 
-	// default query params if they dont exist
+	// page & size
 	page := 1
+	if p := q.Get("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
 	pageSize := 10
-
-	// try to parse query params
-	if pageStr != "" {
-		parsedPage, err := strconv.Atoi(pageStr)
-		if err == nil && parsedPage > 0 {
-			page = parsedPage
-		}
-	}
-	if pageSizeStr != "" {
-		parsedPageSize, err := strconv.Atoi(pageSizeStr)
-		if err == nil && parsedPageSize > 0 && parsedPageSize <= 100 {
-			pageSize = parsedPageSize
+	if ps := q.Get("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 && v <= 100 {
+			pageSize = v
 		}
 	}
 
-	// get the data and respond
-	paginatedResponse, err := models.GetPaginatedClimbs(page, pageSize)
+	// filters
+	nameFilter := q.Get("name")
+	var boardID uint
+	if b := q.Get("board_id"); b != "" {
+		if v, err := strconv.ParseUint(b, 10, 32); err == nil {
+			boardID = uint(v)
+		}
+	}
+
+	resp, err := models.GetPaginatedClimbs(page, pageSize, nameFilter, boardID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve climbs: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(paginatedResponse)
+	json.NewEncoder(w).Encode(resp)
 }
 
-func GetLayouts(w http.ResponseWriter, r *http.Request) {
-	// get all layout & sizes
-	layouts, err := models.GetAllProductSizeLayoutSets()
+// GetBoardOptions handles GET /api/boards to retrieve all board options
+func GetBoardOptions(w http.ResponseWriter, r *http.Request) {
+	boards, err := models.GetBoardOptions()
 	if err != nil {
-		http.Error(w, "Failed to retrieve layouts: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve board options: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(layouts)
+	json.NewEncoder(w).Encode(struct {
+		Boards []models.BoardOption `json:"boards"`
+	}{Boards: boards})
 }
