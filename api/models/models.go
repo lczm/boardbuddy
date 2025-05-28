@@ -3,8 +3,10 @@ package models
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/lczm/boardbuddy/api/config"
+	"github.com/patrickmn/go-cache"
 )
 
 // Climb represents a climb along with its board images.
@@ -33,7 +35,14 @@ type BoardOption struct {
 	Name string `json:"name"`
 }
 
+var c = cache.New(7*24*time.Hour, 10*time.Minute)
+
 func GetPaginatedClimbs(page, pageSize int, nameFilter string, boardID uint) (*PaginatedClimbsResponse, error) {
+	cacheKey := fmt.Sprintf("climbs-%d-%d-%s-%d", page, pageSize, nameFilter, boardID)
+	if x, found := c.Get(cacheKey); found {
+		return x.(*PaginatedClimbsResponse), nil
+	}
+
 	nameFilter = strings.TrimSpace(nameFilter)
 	likePattern := "%" + nameFilter + "%"
 
@@ -107,17 +116,23 @@ LIMIT ? OFFSET ?;`
 		totalPages++
 	}
 
-	return &PaginatedClimbsResponse{
+	resp := &PaginatedClimbsResponse{
 		Climbs:     climbs,
 		TotalCount: totalCount,
 		Page:       page,
 		PageSize:   pageSize,
 		TotalPages: totalPages,
-	}, nil
+	}
+	c.Set(cacheKey, resp, cache.DefaultExpiration)
+	return resp, nil
 }
 
 // get all listed boards
 func GetBoardOptions() ([]BoardOption, error) {
+	cacheKey := "boardOptions"
+	if x, found := c.Get(cacheKey); found {
+		return x.([]BoardOption), nil
+	}
 	var boards []BoardOption
 	query := `
 SELECT
@@ -132,6 +147,7 @@ ORDER BY ps.position;`
 	if err := config.KilterDB.Raw(query).Scan(&boards).Error; err != nil {
 		return nil, fmt.Errorf("fetch boards: %w", err)
 	}
+	c.Set(cacheKey, boards, cache.DefaultExpiration)
 	return boards, nil
 }
 
