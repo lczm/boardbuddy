@@ -30,14 +30,15 @@ export default function DesktopView() {
       });
   }, [boardId, navigate]);
 
-  // Parse image filenames safely
+  // Parse image filenames safely from the first climb
   const getImageFilenames = () => {
-    if (!climbs.length) return [];
+    if (!climbs.length || !climbs[0].image_filenames) return []; // Check if climbs[0] and its image_filenames exist
     
     try {
-      return JSON.parse(climbs[0].image_filenames) || [];
+      // Access image_filenames from the first climb in the array
+      return JSON.parse(climbs[0].image_filenames) || []; 
     } catch (e) {
-      console.error('Error parsing image filenames:', e);
+      console.error('Error parsing image filenames:', e, climbs[0].image_filenames);
       return [];
     }
   };
@@ -74,6 +75,7 @@ export default function DesktopView() {
               src={`https://api.kilterboardapp.com/img/${filename}`}
               alt="Hold position"
               className="hold-image"
+              crossOrigin="anonymous" // Added crossOrigin attribute
             />
           ))}
         </div>
