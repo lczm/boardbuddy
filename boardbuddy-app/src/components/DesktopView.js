@@ -30,6 +30,18 @@ export default function DesktopView() {
       });
   }, [boardId, navigate]);
 
+  // Parse image filenames safely
+  const getImageFilenames = () => {
+    if (!climbs.length) return [];
+    
+    try {
+      return JSON.parse(climbs[0].image_filenames) || [];
+    } catch (e) {
+      console.error('Error parsing image filenames:', e);
+      return [];
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading climbs...</div>;
   }
@@ -45,10 +57,10 @@ export default function DesktopView() {
         </div>
         <div className="problem-list">
           {climbs.map(climb => (
-            <div key={climb.id} className="problem-item">
-              <h4>{climb.name}</h4>
+            <div key={climb.uuid} className="problem-item">
+              <h4>{climb.climb_name}</h4>
               <p>Grade: {climb.grade}</p>
-              <p>Setter: {climb.setter}</p>
+              <p>Setter: {climb.setter_name}</p>
               <p>Rating: {'★'.repeat(climb.rating || 0)}</p>
             </div>
           ))}
@@ -56,7 +68,7 @@ export default function DesktopView() {
       </div>
       <div className="main-content">
         <div className="board-image">
-          {climbs[0]?.image_filenames?.map((filename, index) => (
+          {getImageFilenames().map((filename, index) => (
             <img
               key={index}
               src={`https://api.kilterboardapp.com/img/${filename}`}

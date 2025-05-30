@@ -57,16 +57,21 @@ body {
   background: var(--primary);
 }
 
+/* Adjust board image container for proper overlay */
 .board-image {
   position: relative;
   height: 100vh;
   width: 100%;
+  background: #2d3748; /* Match your primary color */
 }
 
 .hold-image {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: auto;
-  max-width: 100%;
+  pointer-events: none; /* Allow clicks through images */
 }
 
 /* Responsive Design */
@@ -77,26 +82,114 @@ body {
   
   .mobile-dashboard {
     position: relative;
-    height: 100vh;
+    height: calc(100vh - 120px); /* Account for header/footer */
+    padding-top: 60px; /* Space for dropdown */
   }
   
   .problem-dropdown {
-    position: absolute;
+    position: fixed;
     top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
-    width: 80%;
+    width: 90%;
+    max-width: 400px;
+    padding: 0.5rem;
   }
+
 }
 
-/* Footer */
 footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
+  position: relative; /* Changed from fixed */
+  margin-top: 2rem;
   padding: 1rem;
   background: white;
   border-top: 1px solid #e2e8f0;
+}
+
+/* Problem Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+}
+
+.problem-details {
+  margin: 1rem 0;
+}
+
+.stars, .grade {
+  color: var(--accent);
+}
+
+.close-button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+.back-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.sidebar-header {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mobile-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  background: white;
+}
+
+.problem-details-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+}
+
+.board-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
