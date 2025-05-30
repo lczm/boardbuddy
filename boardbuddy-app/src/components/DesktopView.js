@@ -7,16 +7,13 @@ export default function DesktopView() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  
   const boardId = location.state?.boardId;
   const boardName = location.state?.boardName;
-
   useEffect(() => {
     if (!boardId) {
       navigate('/');
       return;
     }
-    
     axios.get(`https://lczm.me/boardbuddy/api/climbs?board_id=${boardId}`)
       .then(response => {
         console.log('Climbs API Response:', response.data);
@@ -30,11 +27,10 @@ export default function DesktopView() {
       });
   }, [boardId, navigate]);
 
-  // Parse image filenames safely from the first climb
   const getImageFilenames = () => {
-    if (!climbs.length || !climbs[0].image_filenames) return [];
+    if (!climbs.length || !climbs[0].image_filenames) return []; 
     try {
-      return JSON.parse(climbs[0].image_filenames) || [];
+      return JSON.parse(climbs[0].image_filenames) || []; 
     } catch (e) {
       console.error('Error parsing image filenames:', e, climbs[0].image_filenames);
       return [];
@@ -70,9 +66,10 @@ export default function DesktopView() {
           {getImageFilenames().map((filename, index) => (
             <img
               key={index}
-              src={`https://lczm.me/img-proxy?url=${encodeURIComponent(`https://api.kilterboardapp.com/img/${filename}`)}`}
+              src={`https://api.kilterboardapp.com/img/${filename}`}
               alt="Hold position"
               className="hold-image"
+              crossOrigin="anonymous" // urr gonna put this here for now hopefully it lets me bypass 
             />
           ))}
         </div>
