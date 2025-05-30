@@ -1,7 +1,5 @@
-// src/app/(dashboard)/kilter-board/page.tsx
-import DesktopView from '@/components/DesktopView'
-import MobileView from '@/components/MobileView'
-import { getClimbs } from '@/lib/api'
+import ResponsiveView from '@/components/ResponsiveView'
+import { getClimbs, getBoards } from '@/lib/api'
 
 export default async function KilterBoardPage({
   searchParams,
@@ -15,12 +13,12 @@ export default async function KilterBoardPage({
   }
 
   const climbs = await getClimbs(boardId)
+  const boards = await getBoards()
+  const board = boards.find((b: any) => b.id.toString() === boardId)
 
   return (
     <div className="h-screen">
-      {/* Render Desktop/Mobile views */}
-      <DesktopView climbs={climbs} />
-      <MobileView climbs={climbs} />
+      <ResponsiveView climbs={climbs} board={board} />
     </div>
   )
 }

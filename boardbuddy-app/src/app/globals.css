@@ -127,10 +127,6 @@ footer {
   width: 90%;
 }
 
-.problem-details {
-  margin: 1rem 0;
-}
-
 .stars, .grade {
   color: var(--accent);
 }
