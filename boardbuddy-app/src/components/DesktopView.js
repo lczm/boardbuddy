@@ -32,11 +32,9 @@ export default function DesktopView() {
 
   // Parse image filenames safely from the first climb
   const getImageFilenames = () => {
-    if (!climbs.length || !climbs[0].image_filenames) return []; // Check if climbs[0] and its image_filenames exist
-    
+    if (!climbs.length || !climbs[0].image_filenames) return [];
     try {
-      // Access image_filenames from the first climb in the array
-      return JSON.parse(climbs[0].image_filenames) || []; 
+      return JSON.parse(climbs[0].image_filenames) || [];
     } catch (e) {
       console.error('Error parsing image filenames:', e, climbs[0].image_filenames);
       return [];
@@ -72,10 +70,9 @@ export default function DesktopView() {
           {getImageFilenames().map((filename, index) => (
             <img
               key={index}
-              src={`https://api.kilterboardapp.com/img/${filename}`}
+              src={`https://lczm.me/img-proxy?url=${encodeURIComponent(`https://api.kilterboardapp.com/img/${filename}`)}`}
               alt="Hold position"
               className="hold-image"
-              crossOrigin="anonymous" // Added crossOrigin attribute
             />
           ))}
         </div>
