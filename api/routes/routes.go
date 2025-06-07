@@ -24,9 +24,8 @@ func SetupRoutes() *chi.Mux {
 		r.Get("/images/{filename}", handlers.ServeImage)
 	})
 
-	// Swagger documentation
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8082/swagger/doc.json"), // The url pointing to API definition
+		httpSwagger.URL("https://lczm.me/boardbuddy/swagger/doc.json"),
 	))
 
 	return r
