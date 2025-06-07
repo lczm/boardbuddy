@@ -11,34 +11,41 @@ import (
 
 // GradeInfo represents grade information for a specific angle
 type GradeInfo struct {
-	Boulder string `json:"boulder"`
-	Route   string `json:"route"`
+	Boulder string `json:"boulder" example:"7a/V6"`  // Boulder grade in format "grade/V-scale"
+	Route   string `json:"route" example:"7c/5.12d"` // Route grade in format "grade/YDS"
+}
+
+// ClimbGradesExample provides an example of the grades field structure for Swagger documentation
+type ClimbGradesExample struct {
+	Angle40 GradeInfo `json:"40"`
+	Angle45 GradeInfo `json:"45"`
+	Angle50 GradeInfo `json:"50"`
 }
 
 // Climb represents a climb along with its board images.
 type Climb struct {
-	UUID           string               `json:"uuid"`
-	SetterName     string               `json:"setter_name"`
-	ClimbName      string               `json:"climb_name"`
-	Description    string               `json:"description"`
-	Frames         string               `json:"frames"`
-	ImageFilenames string               `json:"image_filenames"` // JSON array string of image filenames
-	Grades         map[string]GradeInfo `json:"grades"`          // angle -> {boulder, route}
-	CreatedAt      string               `json:"created_at"`
+	UUID           string               `json:"uuid" example:"F01419E12672459396CA62E3655ABC46"`             // Unique identifier for the climb
+	SetterName     string               `json:"setter_name" example:"jwebxl"`                                // Username of the climb setter
+	ClimbName      string               `json:"climb_name" example:"swooped"`                                // Name/title of the climb
+	Description    string               `json:"description" example:"A challenging overhang problem"`        // Optional description
+	Frames         string               `json:"frames" example:"p1080r15p1110r15p1131r12"`                   // Hold positions and rotations
+	ImageFilenames string               `json:"image_filenames" example:"[\"layout1.png\",\"layout2.png\"]"` // JSON array string of image filenames
+	Grades         map[string]GradeInfo `json:"grades"`                                                      // Map of angle to grade info
+	CreatedAt      string               `json:"created_at" example:"2018-12-06 21:15:01.127371"`             // Creation timestamp
 }
 
 // CursorPaginatedClimbsResponse holds cursor-paginated climbs along with images.
 type CursorPaginatedClimbsResponse struct {
-	Climbs     []Climb `json:"climbs"`
-	HasMore    bool    `json:"has_more"`
-	NextCursor string  `json:"next_cursor,omitempty"`
-	PageSize   int     `json:"page_size"`
+	Climbs     []Climb `json:"climbs"`                                                     // Array of climb objects
+	HasMore    bool    `json:"has_more" example:"true"`                                    // Whether more pages are available
+	NextCursor string  `json:"next_cursor,omitempty" example:"2025-05-24 04:07:17.406545"` // Cursor for next page (timestamp)
+	PageSize   int     `json:"page_size" example:"10"`                                     // Number of items per page
 }
 
 // BoardOption represents a board (product_size) option for filtering climbs.
 type BoardOption struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID   uint   `json:"id" example:"1"`                // Unique board identifier
+	Name string `json:"name" example:"Original 12x12"` // Human-readable board name
 }
 
 var c = cache.New(7*24*time.Hour, 10*time.Minute)

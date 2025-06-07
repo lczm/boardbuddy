@@ -4,6 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/lczm/boardbuddy/api/handlers"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // SetupRoutes configures all the routes for the application
@@ -22,6 +23,11 @@ func SetupRoutes() *chi.Mux {
 		r.Get("/boards", handlers.GetBoardOptions)
 		r.Get("/images/{filename}", handlers.ServeImage)
 	})
+
+	// Swagger documentation
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8082/swagger/doc.json"), // The url pointing to API definition
+	))
 
 	return r
 }

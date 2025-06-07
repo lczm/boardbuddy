@@ -1,3 +1,22 @@
+// @title BoardBuddy API
+// @version 1.0
+// @description API for managing climbing board routes and data. Features cursor-based pagination, grade information for multiple board angles, and comprehensive filtering capabilities.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8082
+// @BasePath /api
+// @schemes http
+
+// @externalDocs.description BoardBuddy API Documentation
+// @externalDocs.url https://github.com/lczm/boardbuddy/blob/main/api/API.md
+
 package main
 
 import (
@@ -10,6 +29,7 @@ import (
 
 	"github.com/hashicorp/go-getter"
 	"github.com/lczm/boardbuddy/api/config"
+	_ "github.com/lczm/boardbuddy/api/docs"
 	"github.com/lczm/boardbuddy/api/routes"
 	"github.com/spf13/cobra"
 )
