@@ -15,10 +15,6 @@ import (
 )
 
 func downloadImage(url, filePath string) error {
-	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
 	client := &getter.Client{
 		Src:  url,
 		Dst:  filePath,
@@ -36,16 +32,17 @@ func downloadAllImages(imagesDir string) error {
 	}
 	for i, filename := range imageFilenames {
 		imageURL := fmt.Sprintf("https://api.kilterboardapp.com/img/%s", filename)
-		localPath := filepath.Join(imagesDir, filename)
+		baseName := filepath.Base(filename)
+		localPath := filepath.Join(imagesDir, baseName)
 		if _, err := os.Stat(localPath); err == nil {
-			fmt.Printf("Image %d/%d already exists: %s\n", i+1, len(imageFilenames), filename)
+			fmt.Printf("Image %d/%d already exists: %s\n", i+1, len(imageFilenames), baseName)
 			continue
 		}
-		fmt.Printf("Downloading image %d/%d: %s\n", i+1, len(imageFilenames), filename)
+		fmt.Printf("Downloading image %d/%d: %s\n", i+1, len(imageFilenames), baseName)
 		if err := downloadImage(imageURL, localPath); err != nil {
-			fmt.Printf("Failed to download %s: %v\n", filename, err)
+			fmt.Printf("Failed to download %s: %v\n", baseName, err)
 		} else {
-			fmt.Printf("Successfully downloaded: %s\n", filename)
+			fmt.Printf("Successfully downloaded: %s\n", baseName)
 		}
 	}
 

@@ -20,6 +20,7 @@ func SetupRoutes() *chi.Mux {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/climbs", handlers.GetClimbs)
 		r.Get("/boards", handlers.GetBoardOptions)
+		r.Get("/images/{filename}", handlers.ServeImage)
 	})
 
 	return r
