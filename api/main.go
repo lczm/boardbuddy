@@ -10,9 +10,9 @@
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8082
-// @BasePath /api
-// @schemes http
+// @host lczm.me
+// @BasePath /boardbuddy/api
+// @schemes https
 
 // @externalDocs.description BoardBuddy API Documentation
 // @externalDocs.url https://github.com/lczm/boardbuddy/blob/main/api/API.md
