@@ -30,6 +30,7 @@ type Climb struct {
 	Description    string               `json:"description" example:"A challenging overhang problem"`        // Optional description
 	Frames         string               `json:"frames" example:"p1080r15p1110r15p1131r12"`                   // Hold positions and rotations
 	ImageFilenames string               `json:"image_filenames" example:"[\"layout1.png\",\"layout2.png\"]"` // JSON array string of image filenames
+	ProductSizeID  uint                 `json:"product_size_id" example:"1"`                                 // Board/product size identifier
 	Grades         map[string]GradeInfo `json:"grades"`                                                      // Map of angle to grade info
 	CreatedAt      string               `json:"created_at" example:"2018-12-06 21:15:01.127371"`             // Creation timestamp
 }
@@ -72,7 +73,7 @@ func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID 
 		args = []interface{}{likePattern, cursor}
 	}
 
-	// Optimized query - group by climb UUID to avoid duplicates
+	// Optimized query - each climb appears once per compatible product size
 	query := `
 SELECT 
   c.uuid,
@@ -81,17 +82,8 @@ SELECT
   c.description,
   c.frames,
   c.created_at,
-  COALESCE(
-    (SELECT json_group_array(DISTINCT psl.image_filename) 
-     FROM product_sizes_layouts_sets psl 
-     JOIN product_sizes ps2 ON psl.product_size_id = ps2.id
-     WHERE ps2.product_id = l.product_id AND psl.layout_id = l.id AND
-           ps2.edge_left <= c.edge_left AND
-           ps2.edge_right >= c.edge_right AND
-           ps2.edge_bottom <= c.edge_bottom AND
-           ps2.edge_top >= c.edge_top),
-    '[]'
-  ) AS image_filenames
+  ps.id AS product_size_id,
+  psl.image_filename AS image_filenames
 FROM climbs c
 JOIN layouts l ON c.layout_id = l.id
 JOIN product_sizes ps ON (
@@ -101,12 +93,12 @@ JOIN product_sizes ps ON (
   ps.edge_bottom <= c.edge_bottom AND
   ps.edge_top >= c.edge_top
 )
+JOIN product_sizes_layouts_sets psl ON psl.product_size_id = ps.id AND psl.layout_id = l.id
 WHERE c.is_listed = 1 
   AND c.name LIKE ? 
   ` + cursorCondition + `
   ` + optionalBoardFilterSQL(boardID) + `
-GROUP BY c.uuid
-ORDER BY c.created_at DESC, c.uuid DESC
+ORDER BY c.created_at DESC, c.uuid DESC, ps.id
 LIMIT ?`
 
 	args = append(args, pageSize+1) // Get one extra to check for more pages
@@ -190,12 +182,18 @@ func populateClimbGrades(climbs []Climb) error {
 	}
 
 	// Extract unique climb UUIDs for batch fetching
-	climbUUIDs := make([]string, len(climbs))
+	uniqueUUIDs := make(map[string]bool)
 	climbIndexMap := make(map[string][]int) // UUID -> slice indices
 
 	for i, climb := range climbs {
-		climbUUIDs[i] = climb.UUID
+		uniqueUUIDs[climb.UUID] = true
 		climbIndexMap[climb.UUID] = append(climbIndexMap[climb.UUID], i)
+	}
+
+	// Convert to slice for query
+	climbUUIDs := make([]string, 0, len(uniqueUUIDs))
+	for uuid := range uniqueUUIDs {
+		climbUUIDs = append(climbUUIDs, uuid)
 	}
 
 	// Build placeholders for IN clause
@@ -244,7 +242,7 @@ ORDER BY cs.climb_uuid, cs.angle`, placeholders)
 				Route:   result.RouteName,
 			}
 
-			// Set grades for all climbs with this UUID (there might be duplicates for different product sizes)
+			// Set grades for all climbs with this UUID (there will be multiple for different product sizes)
 			for _, idx := range indices {
 				climbs[idx].Grades[angleStr] = gradeInfo
 			}
