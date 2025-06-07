@@ -11,17 +11,11 @@ import (
 	"github.com/lczm/boardbuddy/api/models"
 )
 
-// GetClimbs handles GET /api/climbs?page=&page_size=&name=&board_id=
+// GetClimbs handles GET /api/climbs?cursor=&page_size=&name=&board_id=
 func GetClimbs(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-
-	// page & size
-	page := 1
-	if p := q.Get("page"); p != "" {
-		if v, err := strconv.Atoi(p); err == nil && v > 0 {
-			page = v
-		}
-	}
+	// cursor & size
+	cursor := q.Get("cursor") // empty string for first page
 	pageSize := 10
 	if ps := q.Get("page_size"); ps != "" {
 		if v, err := strconv.Atoi(ps); err == nil && v > 0 && v <= 100 {
@@ -37,8 +31,7 @@ func GetClimbs(w http.ResponseWriter, r *http.Request) {
 			boardID = uint(v)
 		}
 	}
-
-	resp, err := models.GetPaginatedClimbs(page, pageSize, nameFilter, boardID)
+	resp, err := models.GetPaginatedClimbs(cursor, pageSize, nameFilter, boardID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve climbs: "+err.Error(), http.StatusInternalServerError)
 		return
