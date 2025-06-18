@@ -232,3 +232,79 @@ footer {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   pointer-events: none;
 }
+
+/* Add to styles.css */
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .mobile-dashboard {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--primary);
+    padding-top: 60px;
+  }
+
+  .mobile-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: white;
+    padding: 1rem;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .problem-dropdown {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: 90%;
+    max-width: 400px;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 2px solid var(--accent);
+    background: white;
+    font-size: 1rem;
+  }
+
+  .board-image {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    margin-top: 120px;
+  }
+
+  .mobile-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: pan-y;
+  }
+
+  .hold-image {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    pointer-events: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .board-title {
+    margin: 0;
+    font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
