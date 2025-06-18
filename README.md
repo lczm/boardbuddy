@@ -11,7 +11,7 @@ Just visit []().
 For local hosting.
 
 ```console
-$ git clone https://github.com/lczm/boardbuddy
+$ git clone https://github.com/lczm/boardbuddy && cd boardbuddy/boardbuddy-app
 $ npm i && npm start
 ```
 
