@@ -4,6 +4,17 @@
     <p>Climb more buddy.</p>
 </div>
 
+## Usage
+
+Just visit []().
+
+For local hosting.
+
+```console
+$ git clone https://github.com/lczm/boardbuddy
+$ npm i && npm start
+```
+
 ## [License](./LICENSE)
 
 Provisioned under the MIT License.
