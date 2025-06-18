@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import ProblemModal from './ProblemModal'; 
 
 export default function DesktopView() {
   const [climbs, setClimbs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProblem, setSelectedProblem] = useState(null); 
   const location = useLocation();
   const navigate = useNavigate();
   const boardId = location.state?.boardId;
   const boardName = location.state?.boardName;
+
   useEffect(() => {
     if (!boardId) {
       navigate('/');
@@ -16,12 +19,10 @@ export default function DesktopView() {
     }
     axios.get(`https://lczm.me/boardbuddy/api/climbs?board_id=${boardId}`)
       .then(response => {
-        console.log('Climbs API Response:', response.data);
         setClimbs(response.data.climbs || []);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching climbs:', error);
         setClimbs([]);
         setLoading(false);
       });
@@ -34,17 +35,13 @@ export default function DesktopView() {
       .map(climb => climb.image_filenames.split('/')[1]);
   };
 
-  // const getImageFilenames = () => {
-  //   if (!climbs.length || !climbs[0].image_filenames) return []; 
-  //   console.log('Formattted image filenames:', climbs[0].image_filenames.split('/')[1]);
-  //   try {
-  //     console.log('Parsed image filenames:', JSON.parse(climbs[0].image_filenames));
-  //     return JSON.parse(climbs[0].image_filenames) || []; 
-  //   } catch (e) {
-  //     console.error('Error parsing image filenames:', e, climbs[0].image_filenames);
-  //     return [];
-  //   }
-  // };
+  const getProblemForModal = (climb) => ({
+    name: climb.climb_name,
+    difficulty: climb.difficulty || 0,
+    grade: climb.grade,
+    setter: climb.setter_name,
+    rating: climb.rating || 0,
+  });
 
   if (loading) {
     return <div className="loading">Loading climbs...</div>;
@@ -61,7 +58,12 @@ export default function DesktopView() {
         </div>
         <div className="problem-list">
           {climbs.map(climb => (
-            <div key={climb.uuid} className="problem-item">
+            <div
+              key={climb.uuid}
+              className="problem-item"
+              onClick={() => setSelectedProblem(getProblemForModal(climb))}
+              style={{ cursor: 'pointer' }}
+            >
               <h4>{climb.climb_name}</h4>
               <p>Grade: {climb.grade}</p>
               <p>Setter: {climb.setter_name}</p>
@@ -73,16 +75,21 @@ export default function DesktopView() {
       <div className="main-content">
         <div className="board-image">
           {getImageFilenames().map((filename, index) => (
-            <img
-              key={index}
-              src={`https://lczm.me/boardbuddy/api/images/${filename}`}
-              alt="Hold position"
-              className="hold-image"
-              crossOrigin="anonymous" // urr gonna put this here for now hopefully it lets me bypass 
-            />
+            <div key={index} className="image-container">
+              <img
+                src={`https://lczm.me/boardbuddy/api/images/${filename}`}
+                alt="Hold position"
+                className="hold-image"
+                crossOrigin="anonymous"
+              />
+            </div>
           ))}
         </div>
       </div>
+      <ProblemModal
+        problem={selectedProblem}
+        onClose={() => setSelectedProblem(null)}
+      />
     </div>
   );
 }
