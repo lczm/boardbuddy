@@ -6,8 +6,6 @@
 
 ## Usage
 
-Just visit []().
-
 For local hosting.
 
 ```console
