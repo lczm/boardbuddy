@@ -33,12 +33,13 @@ export default function MobileView({ climbs, setClimbs, onSelect }) {
       
       <div className="board-image">
         {formattedFilenames.map((filename, index) => (
-          <img
-            key={index}
-            src={`https://lczm.me/boardbuddy/api/images/${filename}`}
-            alt="Hold position"
-            className="hold-image"
-          />
+          <div key={index} className="mobile-image-container">
+            <img
+              src={`https://lczm.me/boardbuddy/api/images/${filename}`}
+              alt="Hold position"
+              className="hold-image"
+            />
+          </div>
         ))}
       </div>
     </div>
