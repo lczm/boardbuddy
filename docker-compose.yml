@@ -1,0 +1,20 @@
+services:
+  boardbuddy-api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    container_name: boardbuddy-api
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./api/images:/images
+    restart: unless-stopped
+
+  boardbuddy-web:
+    build:
+      context: ./boardbuddy-app
+      dockerfile: ./Dockerfile
+    container_name: boardbuddy-web
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
