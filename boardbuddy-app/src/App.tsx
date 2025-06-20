@@ -9,7 +9,7 @@ import "./App.css";
 function App() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
-  const [angle, setAngle] = useState<number>(45); // Default angle
+  const [angle, setAngle] = useState<number>(40); // Default angle
 
   useEffect(() => {
     const fetchBoards = async () => {
