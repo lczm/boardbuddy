@@ -22,11 +22,13 @@ export const api = {
     }
   },
 
-  getClimbs: async (boardId: string): Promise<Climb[]> => {
+  getClimbs: async (boardId: string, angle?: number): Promise<Climb[]> => {
     try {
-      const response = await apiClient.get<ApiResponse>(
-        `/climbs?board_id=${boardId}`
-      );
+      let url = `/climbs?board_id=${boardId}`;
+      if (angle !== undefined) {
+        url += `&angle=${angle}`;
+      }
+      const response = await apiClient.get<ApiResponse>(url);
       return response.data.climbs || [];
     } catch (error) {
       console.error("Error fetching climbs:", error);

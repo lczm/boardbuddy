@@ -51,8 +51,8 @@ type BoardOption struct {
 
 var c = cache.New(7*24*time.Hour, 10*time.Minute)
 
-func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID uint) (*CursorPaginatedClimbsResponse, error) {
-	cacheKey := fmt.Sprintf("climbs-cursor-%s-%d-%s-%d", cursor, pageSize, nameFilter, boardID)
+func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID uint, angle uint) (*CursorPaginatedClimbsResponse, error) {
+	cacheKey := fmt.Sprintf("climbs-cursor-%s-%d-%s-%d-%d", cursor, pageSize, nameFilter, boardID, angle)
 	if x, found := c.Get(cacheKey); found {
 		return x.(*CursorPaginatedClimbsResponse), nil
 	}
@@ -94,10 +94,12 @@ JOIN product_sizes ps ON (
   ps.edge_top >= c.edge_top
 )
 JOIN product_sizes_layouts_sets psl ON psl.product_size_id = ps.id AND psl.layout_id = l.id
+` + optionalAngleJoinSQL(angle) + `
 WHERE c.is_listed = 1
   AND c.name LIKE ?
   ` + cursorCondition + `
   ` + optionalBoardFilterSQL(boardID) + `
+  ` + optionalAngleFilterSQL(angle) + `
 GROUP BY c.uuid, ps.id
 ORDER BY c.created_at DESC, c.uuid DESC, ps.id
 LIMIT ?`
@@ -169,6 +171,22 @@ func optionalBoardFilterSQL(boardID uint) string {
 		return ""
 	}
 	return fmt.Sprintf("AND ps.id = %d", boardID)
+}
+
+// optionalAngleJoinSQL returns SQL snippet to join climb_stats for angle filtering
+func optionalAngleJoinSQL(angle uint) string {
+	if angle == 0 {
+		return ""
+	}
+	return "JOIN climb_stats cs ON c.uuid = cs.climb_uuid"
+}
+
+// optionalAngleFilterSQL returns SQL snippet to filter by angle
+func optionalAngleFilterSQL(angle uint) string {
+	if angle == 0 {
+		return ""
+	}
+	return fmt.Sprintf("AND cs.angle = %d", angle)
 }
 
 // populateClimbGrades fetches and populates grade information for a list of climbs

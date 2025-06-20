@@ -29,7 +29,7 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
 
     const fetchClimbs = async () => {
       try {
-        const climbsData = await api.getClimbs(boardId);
+        const climbsData = await api.getClimbs(boardId, angle);
         setClimbs(climbsData);
         // Default to first problem
         if (climbsData.length > 0) {
@@ -44,10 +44,16 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
     };
 
     fetchClimbs();
-  }, [boardId, navigate]);
+  }, [boardId, angle, navigate]);
 
   const handleClimbSelect = (climb: Climb) => {
     setSelectedClimb(climb);
+  };
+
+  const handleAngleChange = (newAngle: number) => {
+    setLoading(true);
+    setSelectedClimb(null); // Clear selected climb when angle changes
+    onAngleChange(newAngle);
   };
 
   const handleBackClick = () => {
@@ -91,7 +97,7 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
           onClimbSelect={handleClimbSelect}
           onBackClick={handleBackClick}
           angle={angle}
-          onAngleChange={onAngleChange}
+          onAngleChange={handleAngleChange}
         />
 
         {/* Mobile Dropdown */}
@@ -100,7 +106,7 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
           selectedClimb={selectedClimb}
           onClimbSelect={handleClimbSelect}
           angle={angle}
-          onAngleChange={onAngleChange}
+          onAngleChange={handleAngleChange}
         />
 
         {/* Main Content */}

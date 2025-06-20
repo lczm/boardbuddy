@@ -11,7 +11,7 @@ import (
 	"github.com/lczm/boardbuddy/api/models"
 )
 
-// GetClimbs handles GET /api/climbs?cursor=&page_size=&name=&board_id=
+// GetClimbs handles GET /api/climbs?cursor=&page_size=&name=&board_id=&angle=
 // @Summary Get paginated climbs
 // @Description Retrieve a paginated list of climbing routes with optional filtering. Uses cursor-based pagination for efficient navigation through large datasets.
 // @Tags climbs
@@ -21,6 +21,7 @@ import (
 // @Param page_size query int false "Number of items per page (1-100)" default(10) minimum(1) maximum(100) Example(10)
 // @Param name query string false "Filter climbs by name (partial match)" Example(swooped)
 // @Param board_id query int false "Filter climbs by board/product size ID" Example(1)
+// @Param angle query int false "Filter climbs by angle (5-70 degrees)" Example(45)
 // @Success 200 {object} models.CursorPaginatedClimbsResponse "Successfully retrieved climbs"
 // @Failure 400 {object} map[string]string "Bad request - invalid parameters"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -44,7 +45,13 @@ func GetClimbs(w http.ResponseWriter, r *http.Request) {
 			boardID = uint(v)
 		}
 	}
-	resp, err := models.GetPaginatedClimbs(cursor, pageSize, nameFilter, boardID)
+	var angle uint
+	if a := q.Get("angle"); a != "" {
+		if v, err := strconv.ParseUint(a, 10, 32); err == nil && v >= 5 && v <= 70 {
+			angle = uint(v)
+		}
+	}
+	resp, err := models.GetPaginatedClimbs(cursor, pageSize, nameFilter, boardID, angle)
 	if err != nil {
 		http.Error(w, "Failed to retrieve climbs: "+err.Error(), http.StatusInternalServerError)
 		return
