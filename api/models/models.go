@@ -137,7 +137,7 @@ LIMIT ?`, angle, cursorCondition, optionalBoardFilterSQL(boardID))
 	}
 
 	// Cache for shorter time since this is more dynamic
-	c.Set(cacheKey, resp, 5*time.Minute)
+	c.Set(cacheKey, resp, 1*time.Hour)
 	return resp, nil
 }
 
@@ -161,7 +161,7 @@ ORDER BY ps.position;`
 	if err := config.KilterDB.Raw(query).Scan(&boards).Error; err != nil {
 		return nil, fmt.Errorf("fetch boards: %w", err)
 	}
-	c.Set(cacheKey, boards, cache.DefaultExpiration)
+	c.Set(cacheKey, boards, cache.NoExpiration)
 	return boards, nil
 }
 
