@@ -1,5 +1,6 @@
 import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
+import { getGradeForAngle } from "../types";
 
 interface SidebarProps {
   boardName: string;
@@ -73,7 +74,9 @@ export default function Sidebar({
               <h4 className="font-semibold text-gray-900">
                 {climb.climb_name}
               </h4>
-              <p className="text-sm text-gray-600">Grade: {climb.grade}</p>
+              <p className="text-sm text-gray-600">
+                Grade: {getGradeForAngle(climb, angle)}
+              </p>
               <p className="text-sm text-gray-600">
                 Setter: {climb.setter_name}
               </p>

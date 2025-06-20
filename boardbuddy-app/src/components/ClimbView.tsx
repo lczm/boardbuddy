@@ -111,7 +111,7 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
 
         {/* Main Content */}
         <div className="flex-1 p-4 md:p-6 flex flex-col">
-          <ProblemView selectedClimb={selectedClimb} />
+          <ProblemView selectedClimb={selectedClimb} angle={angle} />
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
+import { getGradeForAngle } from "../types";
 
 interface MobileDropdownProps {
   climbs: Climb[];
@@ -40,7 +41,7 @@ export default function MobileDropdown({
           <option value="">Select a problem</option>
           {climbs.map((climb) => (
             <option key={climb.uuid} value={climb.uuid}>
-              {climb.climb_name} ({climb.grade})
+              {climb.climb_name} ({getGradeForAngle(climb, angle)})
             </option>
           ))}
         </select>

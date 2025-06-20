@@ -1,11 +1,16 @@
 import { api } from "../api";
 import type { Climb } from "../types";
+import { getGradeForAngle } from "../types";
 
 interface ProblemViewProps {
   selectedClimb: Climb | null;
+  angle: number;
 }
 
-export default function ProblemView({ selectedClimb }: ProblemViewProps) {
+export default function ProblemView({
+  selectedClimb,
+  angle,
+}: ProblemViewProps) {
   const getImageFilenames = (climb: Climb): string[] =>
     climb.image_filenames || [];
 
@@ -24,7 +29,7 @@ export default function ProblemView({ selectedClimb }: ProblemViewProps) {
           {selectedClimb.climb_name}
         </h3>
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          <span>Grade: {selectedClimb.grade}</span>
+          <span>Grade: {getGradeForAngle(selectedClimb, angle)}</span>
           <span>Setter: {selectedClimb.setter_name}</span>
           <span>Rating: {"★".repeat(selectedClimb.rating || 0)}</span>
         </div>
