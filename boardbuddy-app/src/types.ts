@@ -18,6 +18,7 @@ export interface Climb {
   rating?: number;
   image_filenames?: string[];
   board_id: string;
+  ascends: number;
 }
 
 export interface Problem {

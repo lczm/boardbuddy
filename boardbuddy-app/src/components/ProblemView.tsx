@@ -31,7 +31,7 @@ export default function ProblemView({
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
           <span>Grade: {getGradeForAngle(selectedClimb, angle)}</span>
           <span>Setter: {selectedClimb.setter_name}</span>
-          <span>Rating: {"★".repeat(selectedClimb.rating || 0)}</span>
+          <span>Ascends: {selectedClimb.ascends}</span>
         </div>
       </div>
       {/* Overlapped Images Container */}

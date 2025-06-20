@@ -80,9 +80,7 @@ export default function Sidebar({
               <p className="text-sm text-gray-600">
                 Setter: {climb.setter_name}
               </p>
-              <p className="text-sm text-yellow-600">
-                {"★".repeat(climb.rating || 0)}
-              </p>
+              <p className="text-sm text-gray-600">Ascends: {climb.ascends}</p>
             </div>
           ))}
         </div>
