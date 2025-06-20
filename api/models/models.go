@@ -30,6 +30,7 @@ type Climb struct {
 	Description    string               `json:"description" example:"A challenging overhang problem"` // Optional description
 	Frames         string               `json:"frames" example:"p1080r15p1110r15p1131r12"`            // Hold positions and rotations
 	ImageFilenames []string             `gorm:"column:image_filenames;serializer:json" json:"image_filenames"`
+	Ascends        int                  `json:"ascends" example:"0"`
 	ProductSizeID  uint                 `json:"product_size_id" example:"1"`                     // Board/product size identifier
 	Grades         map[string]GradeInfo `json:"grades"`                                          // Map of angle to grade info
 	CreatedAt      string               `json:"created_at" example:"2018-12-06 21:15:01.127371"` // Creation timestamp
@@ -73,8 +74,8 @@ func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID 
 		args = []interface{}{likePattern, cursor}
 	}
 
-	// Optimized query - aggregate images per product size using JSON_GROUP_ARRAY
-	query := `
+	// Join climb_stats for specific angle and select per-angle ascends
+	query := fmt.Sprintf(`
 SELECT
   c.uuid,
   c.setter_username AS setter_name,
@@ -83,7 +84,8 @@ SELECT
   c.frames,
   c.created_at,
   ps.id AS product_size_id,
-  JSON_GROUP_ARRAY(psl.image_filename) AS image_filenames
+  JSON_GROUP_ARRAY(psl.image_filename) AS image_filenames,
+  cs.ascensionist_count AS ascends
 FROM climbs c
 JOIN layouts l ON c.layout_id = l.id
 JOIN product_sizes ps ON (
@@ -94,15 +96,14 @@ JOIN product_sizes ps ON (
   ps.edge_top >= c.edge_top
 )
 JOIN product_sizes_layouts_sets psl ON psl.product_size_id = ps.id AND psl.layout_id = l.id
-` + optionalAngleJoinSQL(angle) + `
+JOIN climb_stats cs ON c.uuid = cs.climb_uuid AND cs.angle = %d
 WHERE c.is_listed = 1
   AND c.name LIKE ?
-  ` + cursorCondition + `
-  ` + optionalBoardFilterSQL(boardID) + `
-  ` + optionalAngleFilterSQL(angle) + `
+  %s
+  %s
 GROUP BY c.uuid, ps.id
-ORDER BY c.created_at DESC, c.uuid DESC, ps.id
-LIMIT ?`
+ORDER BY ascends DESC, c.created_at DESC, c.uuid DESC, ps.id
+LIMIT ?`, angle, cursorCondition, optionalBoardFilterSQL(boardID))
 
 	args = append(args, pageSize+1) // Get one extra to check for more pages
 
@@ -118,7 +119,7 @@ LIMIT ?`
 	}
 
 	// Fetch grades for all climbs
-	if err := populateClimbGrades(climbs); err != nil {
+	if err := populateClimbGrades(climbs, angle); err != nil {
 		return nil, fmt.Errorf("populate grades: %w", err)
 	}
 
@@ -173,24 +174,8 @@ func optionalBoardFilterSQL(boardID uint) string {
 	return fmt.Sprintf("AND ps.id = %d", boardID)
 }
 
-// optionalAngleJoinSQL returns SQL snippet to join climb_stats for angle filtering
-func optionalAngleJoinSQL(angle uint) string {
-	if angle == 0 {
-		return ""
-	}
-	return "JOIN climb_stats cs ON c.uuid = cs.climb_uuid"
-}
-
-// optionalAngleFilterSQL returns SQL snippet to filter by angle
-func optionalAngleFilterSQL(angle uint) string {
-	if angle == 0 {
-		return ""
-	}
-	return fmt.Sprintf("AND cs.angle = %d", angle)
-}
-
-// populateClimbGrades fetches and populates grade information for a list of climbs
-func populateClimbGrades(climbs []Climb) error {
+// populateClimbGrades fetches and populates grade information for a list of climbs, filtered by angle
+func populateClimbGrades(climbs []Climb, angle uint) error {
 	if len(climbs) == 0 {
 		return nil
 	}
@@ -229,14 +214,15 @@ SELECT
 	dg.route_name
 FROM climb_stats cs
 JOIN difficulty_grades dg ON CAST(cs.display_difficulty AS INTEGER) = dg.difficulty
-WHERE cs.climb_uuid IN (%s)
-ORDER BY cs.climb_uuid, cs.angle`, placeholders)
+WHERE cs.climb_uuid IN (%s) AND cs.angle = ?
+ORDER BY cs.climb_uuid`, placeholders)
 
 	// Convert climbUUIDs to interface{} slice for the query
-	args := make([]interface{}, len(climbUUIDs))
+	args := make([]interface{}, len(climbUUIDs)+1)
 	for i, uuid := range climbUUIDs {
 		args[i] = uuid
 	}
+	args[len(climbUUIDs)] = angle
 
 	// Execute query
 	type GradeResult struct {
@@ -263,6 +249,7 @@ ORDER BY cs.climb_uuid, cs.angle`, placeholders)
 
 			// Set grades for all climbs with this UUID (there will be multiple for different product sizes)
 			for _, idx := range indices {
+				// only specified angle present
 				climbs[idx].Grades[angleStr] = gradeInfo
 			}
 		}
