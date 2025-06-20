@@ -6,7 +6,12 @@ import MobileDropdown from "./MobileDropdown";
 import ProblemView from "./ProblemView";
 import type { Climb, LocationState } from "../types";
 
-export default function ClimbView() {
+interface ClimbViewProps {
+  angle: number;
+  onAngleChange: (angle: number) => void;
+}
+
+export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
   const [climbs, setClimbs] = useState<Climb[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClimb, setSelectedClimb] = useState<Climb | null>(null);
@@ -68,7 +73,9 @@ export default function ClimbView() {
           >
             ← Back
           </button>
-          <h2 className="text-xl font-bold text-gray-900">{boardName}</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">{boardName}</h2>
+          </div>
         </div>
       </div>
 
@@ -83,6 +90,8 @@ export default function ClimbView() {
           selectedClimb={selectedClimb}
           onClimbSelect={handleClimbSelect}
           onBackClick={handleBackClick}
+          angle={angle}
+          onAngleChange={onAngleChange}
         />
 
         {/* Mobile Dropdown */}
@@ -90,6 +99,8 @@ export default function ClimbView() {
           climbs={climbs}
           selectedClimb={selectedClimb}
           onClimbSelect={handleClimbSelect}
+          angle={angle}
+          onAngleChange={onAngleChange}
         />
 
         {/* Main Content */}

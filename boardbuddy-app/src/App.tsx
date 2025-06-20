@@ -9,6 +9,7 @@ import "./App.css";
 function App() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
+  const [angle, setAngle] = useState<number>(45); // Default angle
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -31,9 +32,19 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={<BoardSelector boards={boards} loading={loading} />}
+        element={
+          <BoardSelector
+            boards={boards}
+            loading={loading}
+            angle={angle}
+            onAngleChange={setAngle}
+          />
+        }
       />
-      <Route path="/dashboard" element={<ClimbView />} />
+      <Route
+        path="/dashboard"
+        element={<ClimbView angle={angle} onAngleChange={setAngle} />}
+      />
     </Routes>
   );
 }

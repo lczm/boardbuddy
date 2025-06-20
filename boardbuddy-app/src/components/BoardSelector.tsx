@@ -1,12 +1,20 @@
 import { useNavigate } from "react-router-dom";
+import AngleSelector from "./AngleSelector";
 import type { Board } from "../types";
 
 interface BoardSelectorProps {
   boards: Board[];
   loading: boolean;
+  angle: number;
+  onAngleChange: (angle: number) => void;
 }
 
-export default function BoardSelector({ boards, loading }: BoardSelectorProps) {
+export default function BoardSelector({
+  boards,
+  loading,
+  angle,
+  onAngleChange,
+}: BoardSelectorProps) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -21,6 +29,13 @@ export default function BoardSelector({ boards, loading }: BoardSelectorProps) {
   return (
     <div className="landing">
       <h1>BoardBuddy</h1>
+      <div className="mb-6 flex justify-center">
+        <AngleSelector
+          angle={angle}
+          onAngleChange={onAngleChange}
+          className="bg-white p-3 rounded-lg shadow-sm border"
+        />
+      </div>
       <div className="board-grid">
         {Array.isArray(boards) &&
           boards.map((board) => (

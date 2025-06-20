@@ -1,3 +1,4 @@
+import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
 
 interface SidebarProps {
@@ -6,6 +7,8 @@ interface SidebarProps {
   selectedClimb: Climb | null;
   onClimbSelect: (climb: Climb) => void;
   onBackClick: () => void;
+  angle: number;
+  onAngleChange: (angle: number) => void;
 }
 
 export default function Sidebar({
@@ -14,6 +17,8 @@ export default function Sidebar({
   selectedClimb,
   onClimbSelect,
   onBackClick,
+  angle,
+  onAngleChange,
 }: SidebarProps) {
   return (
     <div className="hidden md:flex md:w-80 bg-white shadow-lg flex-col">
@@ -24,7 +29,34 @@ export default function Sidebar({
         >
           ← Back to Boards
         </button>
-        <h2 className="text-xl font-bold text-gray-900">{boardName}</h2>
+        <div className="flex flex-col space-y-3">
+          <h2 className="text-xl font-bold text-gray-900">{boardName}</h2>
+          <div className="flex gap-2">
+            <AngleSelector
+              angle={angle}
+              onAngleChange={onAngleChange}
+              className="flex-shrink-0"
+            />
+            <select
+              className="flex-1 min-w-0 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selected = climbs.find((c) => c.uuid === selectedId);
+                if (selected) {
+                  onClimbSelect(selected);
+                }
+              }}
+              value={selectedClimb?.uuid || ""}
+            >
+              <option value="">Select a problem</option>
+              {climbs.map((climb) => (
+                <option key={climb.uuid} value={climb.uuid}>
+                  {climb.climb_name} ({climb.grade})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-3">
