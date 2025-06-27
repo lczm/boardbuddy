@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import AngleSelector from "./AngleSelector";
 import type { Board } from "../types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BoardSelectorProps {
   boards: Board[];
