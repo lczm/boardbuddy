@@ -73,7 +73,7 @@ export default function Sidebar({
                 <SelectContent>
                   {climbs.map((climb) => (
                     <SelectItem key={climb.uuid} value={climb.uuid}>
-                      {climb.climb_name} ({climb.grade})
+                      {climb.climb_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
