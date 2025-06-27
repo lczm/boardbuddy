@@ -4,12 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/form/v4"
 	"github.com/lczm/boardbuddy/api/models"
 )
+
+var decoder = form.NewDecoder()
+
+type GetClimbsParams struct {
+	Cursor   string `form:"cursor"`
+	PageSize int    `form:"page_size,default=10"`
+	Name     string `form:"name"`
+	BoardID  uint   `form:"board_id"`
+	Angle    uint   `form:"angle"`
+}
 
 // GetClimbs handles GET /api/climbs?cursor=&page_size=&name=&board_id=&angle=
 // @Summary Get paginated climbs
@@ -27,31 +37,24 @@ import (
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /climbs [get]
 func GetClimbs(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	// cursor & size
-	cursor := q.Get("cursor") // empty string for first page
-	pageSize := 10
-	if ps := q.Get("page_size"); ps != "" {
-		if v, err := strconv.Atoi(ps); err == nil && v > 0 && v <= 100 {
-			pageSize = v
-		}
+	var params GetClimbsParams
+	err := decoder.Decode(&params, r.URL.Query())
+	if err != nil {
+		http.Error(w, "Failed to decode query params: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	// filters
-	nameFilter := q.Get("name")
-	var boardID uint
-	if b := q.Get("board_id"); b != "" {
-		if v, err := strconv.ParseUint(b, 10, 32); err == nil {
-			boardID = uint(v)
-		}
+	pageSize := params.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
 	}
+
 	var angle uint
-	if a := q.Get("angle"); a != "" {
-		if v, err := strconv.ParseUint(a, 10, 32); err == nil && v >= 5 && v <= 70 {
-			angle = uint(v)
-		}
+	if params.Angle >= 5 && params.Angle <= 70 {
+		angle = params.Angle
 	}
-	resp, err := models.GetPaginatedClimbs(cursor, pageSize, nameFilter, boardID, angle)
+
+	resp, err := models.GetPaginatedClimbs(params.Cursor, pageSize, params.Name, params.BoardID, angle)
 	if err != nil {
 		http.Error(w, "Failed to retrieve climbs: "+err.Error(), http.StatusInternalServerError)
 		return
