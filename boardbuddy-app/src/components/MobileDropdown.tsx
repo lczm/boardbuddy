@@ -1,5 +1,13 @@
 import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getGradeForAngle } from "../types";
 
 interface MobileDropdownProps {
@@ -17,35 +25,39 @@ export default function MobileDropdown({
   angle,
   onAngleChange,
 }: MobileDropdownProps) {
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selected = climbs.find((c) => c.uuid === selectedId);
-    if (selected) {
-      onClimbSelect(selected);
-    }
-  };
-
   return (
-    <div className="md:hidden p-4 bg-white border-b space-y-3">
-      <div className="flex gap-2">
-        <AngleSelector
-          angle={angle}
-          onAngleChange={onAngleChange}
-          className="flex-shrink-0 bg-gray-50 p-2 rounded-lg"
-        />
-        <select
-          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={handleSelectChange}
-          value={selectedClimb?.uuid || ""}
-        >
-          <option value="">Select a problem</option>
-          {climbs.map((climb) => (
-            <option key={climb.uuid} value={climb.uuid}>
-              {climb.climb_name} ({getGradeForAngle(climb, angle)})
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="md:hidden p-4 border-b bg-card">
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex gap-3">
+            <AngleSelector
+              angle={angle}
+              onAngleChange={onAngleChange}
+              className="flex-shrink-0"
+            />
+            <Select
+              value={selectedClimb?.uuid || ""}
+              onValueChange={(value) => {
+                const selected = climbs.find((c) => c.uuid === value);
+                if (selected) {
+                  onClimbSelect(selected);
+                }
+              }}
+            >
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select a problem" />
+              </SelectTrigger>
+              <SelectContent>
+                {climbs.map((climb) => (
+                  <SelectItem key={climb.uuid} value={climb.uuid}>
+                    {climb.climb_name} ({getGradeForAngle(climb, angle)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

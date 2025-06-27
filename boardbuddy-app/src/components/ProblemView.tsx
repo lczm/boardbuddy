@@ -17,7 +17,9 @@ export default function ProblemView({
   if (!selectedClimb) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500 text-lg">Select a problem to view images</p>
+        <p className="text-muted-foreground text-lg">
+          Select a problem to view images
+        </p>
       </div>
     );
   }
@@ -25,10 +27,8 @@ export default function ProblemView({
   return (
     <div className="flex flex-col h-full">
       <div className="mb-4">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-          {selectedClimb.climb_name}
-        </h3>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+        <h3 className="text-2xl mb-2">{selectedClimb.climb_name}</h3>
+        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           <span>Grade: {getGradeForAngle(selectedClimb, angle)}</span>
           <span>Setter: {selectedClimb.setter_name}</span>
           <span>Ascends: {selectedClimb.ascends}</span>
