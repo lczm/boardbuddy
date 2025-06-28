@@ -21,12 +21,12 @@ export interface Climb {
   ascends: number;
 }
 
-export interface Problem {
-  name: string;
-  difficulty: number;
-  grade: string;
-  setter: string;
-  rating: number;
+// New pagination response type
+export interface PaginatedClimbsResponse {
+  climbs: Climb[];
+  has_more: boolean;
+  next_cursor?: string;
+  page_size: number;
 }
 
 export interface ApiResponse {

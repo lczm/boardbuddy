@@ -29,6 +29,11 @@ interface SidebarProps {
   onBackClick: () => void;
   angle: number;
   onAngleChange: (angle: number) => void;
+  currentPage: number;
+  hasNextPage: boolean;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
+  pageLoading: boolean;
 }
 
 export default function Sidebar({
@@ -39,6 +44,11 @@ export default function Sidebar({
   onBackClick,
   angle,
   onAngleChange,
+  currentPage,
+  hasNextPage,
+  onNextPage,
+  onPreviousPage,
+  pageLoading,
 }: SidebarProps) {
   return (
     <SidebarPrimitive variant="sidebar" collapsible="icon">
@@ -119,6 +129,31 @@ export default function Sidebar({
                   </CardContent>
                 </Card>
               ))}
+
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-between gap-2 pt-3 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onPreviousPage}
+                  disabled={currentPage === 1 || pageLoading}
+                  className="flex-1"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground px-2">
+                  {pageLoading ? "Loading..." : `Page ${currentPage}`}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onNextPage}
+                  disabled={!hasNextPage || pageLoading}
+                  className="flex-1"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { api } from "../api";
@@ -21,12 +21,18 @@ interface ClimbViewProps {
 export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
   const [climbs, setClimbs] = useState<Climb[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [selectedClimb, setSelectedClimb] = useState<Climb | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const cursorsRef = useRef<Record<number, string>>({});
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
   const boardId = state?.boardId;
   const boardName = state?.boardName;
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     if (!boardId) {
@@ -34,24 +40,67 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
       return;
     }
 
-    const fetchClimbs = async () => {
+    const fetchPage = async (page: number) => {
       try {
-        const climbsData = await api.getClimbs(boardId, angle);
-        setClimbs(climbsData);
-        // Default to first problem
-        if (climbsData.length > 0) {
-          setSelectedClimb(climbsData[0]);
+        // Only show full loading screen for the very first load
+        const isFirstLoad = !isInitialized;
+        if (isFirstLoad) {
+          setLoading(true);
+        } else {
+          setPageLoading(true);
         }
-        setLoading(false);
+
+        const cursor = page > 1 ? cursorsRef.current[page] : undefined;
+        const paginatedData = await api.getPaginatedClimbs(
+          boardId,
+          angle,
+          cursor,
+          PAGE_SIZE
+        );
+        setClimbs(paginatedData.climbs);
+        setHasNextPage(paginatedData.has_more);
+
+        // Store cursor for next page if it exists
+        if (paginatedData.next_cursor) {
+          cursorsRef.current = {
+            ...cursorsRef.current,
+            [page + 1]: paginatedData.next_cursor,
+          };
+        }
+
+        // Always set first problem as selected when loading a page
+        if (paginatedData.climbs.length > 0) {
+          setSelectedClimb(paginatedData.climbs[0]);
+        }
+
+        if (isFirstLoad) {
+          setLoading(false);
+          setIsInitialized(true);
+        } else {
+          setPageLoading(false);
+        }
       } catch (error) {
         console.error("API Error:", error);
         setClimbs([]);
         setLoading(false);
+        setPageLoading(false);
       }
     };
 
-    fetchClimbs();
-  }, [boardId, angle, navigate]);
+    fetchPage(currentPage);
+  }, [boardId, angle, currentPage, navigate, isInitialized]);
+
+  const goToNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
 
   const handleClimbSelect = (climb: Climb) => {
     setSelectedClimb(climb);
@@ -60,6 +109,11 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
   const handleAngleChange = (newAngle: number) => {
     setLoading(true);
     setSelectedClimb(null); // Clear selected climb when angle changes
+    setClimbs([]); // Clear existing climbs
+    setCurrentPage(1); // Reset to first page
+    setHasNextPage(false); // Reset pagination
+    setIsInitialized(false); // Reset initialization state
+    cursorsRef.current = {}; // Reset cursors
     onAngleChange(newAngle);
   };
 
@@ -87,6 +141,11 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
           onBackClick={handleBackClick}
           angle={angle}
           onAngleChange={handleAngleChange}
+          currentPage={currentPage}
+          hasNextPage={hasNextPage}
+          onNextPage={goToNextPage}
+          onPreviousPage={goToPreviousPage}
+          pageLoading={pageLoading}
         />
 
         {/* Main Content */}
@@ -127,6 +186,30 @@ export default function ClimbView({ angle, onAngleChange }: ClimbViewProps) {
                 angle={angle}
                 onAngleChange={handleAngleChange}
               />
+              {/* Mobile Pagination */}
+              <div className="px-4 pb-4">
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1 || pageLoading}
+                    className="flex-1"
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-muted-foreground px-3">
+                    {pageLoading ? "Loading..." : `Page ${currentPage}`}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={goToNextPage}
+                    disabled={!hasNextPage || pageLoading}
+                    className="flex-1"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Problem View */}

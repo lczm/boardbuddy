@@ -1,6 +1,11 @@
 import axios from "axios";
 import { config } from "./config";
-import type { Board, Climb, ApiResponse } from "./types";
+import type {
+  Board,
+  Climb,
+  ApiResponse,
+  PaginatedClimbsResponse,
+} from "./types";
 
 const BASE_URL = config.api.baseUrl;
 const IMAGES_BASE_URL = `${BASE_URL}/images`;
@@ -32,6 +37,28 @@ export const api = {
       return response.data.climbs || [];
     } catch (error) {
       console.error("Error fetching climbs:", error);
+      throw error;
+    }
+  },
+
+  getPaginatedClimbs: async (
+    boardId: string,
+    angle?: number,
+    cursor?: string,
+    pageSize: number = 10
+  ): Promise<PaginatedClimbsResponse> => {
+    try {
+      let url = `/climbs?board_id=${boardId}&page_size=${pageSize}`;
+      if (angle !== undefined) {
+        url += `&angle=${angle}`;
+      }
+      if (cursor) {
+        url += `&cursor=${encodeURIComponent(cursor)}`;
+      }
+      const response = await apiClient.get<PaginatedClimbsResponse>(url);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching paginated climbs:", error);
       throw error;
     }
   },
