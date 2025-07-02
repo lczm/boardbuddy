@@ -68,7 +68,8 @@ export default function Sidebar({
           <SidebarGroupContent>
             <div className="space-y-3 p-2">
               <AngleSelector angle={angle} onAngleChange={onAngleChange} />
-              <Select
+              {/* Problem select title, not very useful tbh */}
+              {/* <Select
                 value={selectedClimb?.uuid || ""}
                 onValueChange={(value) => {
                   const selected = climbs.find((c) => c.uuid === value);
@@ -87,7 +88,7 @@ export default function Sidebar({
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
