@@ -2,13 +2,6 @@ import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { getGradeForAngle } from "../types";
 import { ChevronLeft } from "lucide-react";
