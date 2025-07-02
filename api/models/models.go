@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -40,7 +42,7 @@ type Climb struct {
 type CursorPaginatedClimbsResponse struct {
 	Climbs     []Climb `json:"climbs"`                                                     // Array of climb objects
 	HasMore    bool    `json:"has_more" example:"true"`                                    // Whether more pages are available
-	NextCursor string  `json:"next_cursor,omitempty" example:"2025-05-24 04:07:17.406545"` // Cursor for next page (timestamp)
+	NextCursor string  `json:"next_cursor,omitempty" example:"2025-05-24 04:07:17.406545"` // Cursor for next page (composite: ascends:created_at:uuid:product_size_id)
 	PageSize   int     `json:"page_size" example:"10"`                                     // Number of items per page
 }
 
@@ -52,6 +54,67 @@ type BoardOption struct {
 
 var c = cache.New(7*24*time.Hour, 10*time.Minute)
 
+// CompositeCursor represents the cursor for pagination with all sorting fields
+type CompositeCursor struct {
+	Ascends       int    `json:"ascends"`
+	CreatedAt     string `json:"created_at"`
+	UUID          string `json:"uuid"`
+	ProductSizeID uint   `json:"product_size_id"`
+}
+
+// encodeCursor creates a base64-encoded cursor from the sorting fields
+func encodeCursor(ascends int, createdAt, uuid string, productSizeID uint) string {
+	cursor := CompositeCursor{
+		Ascends:       ascends,
+		CreatedAt:     createdAt,
+		UUID:          uuid,
+		ProductSizeID: productSizeID,
+	}
+
+	data, err := json.Marshal(cursor)
+	if err != nil {
+		return ""
+	}
+
+	return base64.URLEncoding.EncodeToString(data)
+}
+
+// decodeCursor decodes a base64-encoded cursor back to its components
+func decodeCursor(cursorStr string) (*CompositeCursor, error) {
+	if cursorStr == "" {
+		return nil, nil
+	}
+
+	// Handle legacy timestamp-only cursors for backward compatibility
+	if !strings.Contains(cursorStr, "{") && len(strings.Split(cursorStr, "-")) >= 3 {
+		// This looks like a timestamp, treat as legacy cursor
+		return &CompositeCursor{
+			Ascends:       -1, // Use -1 to indicate legacy cursor
+			CreatedAt:     cursorStr,
+			UUID:          "",
+			ProductSizeID: 0,
+		}, nil
+	}
+
+	data, err := base64.URLEncoding.DecodeString(cursorStr)
+	if err != nil {
+		// Try treating as legacy timestamp cursor
+		return &CompositeCursor{
+			Ascends:       -1,
+			CreatedAt:     cursorStr,
+			UUID:          "",
+			ProductSizeID: 0,
+		}, nil
+	}
+
+	var cursor CompositeCursor
+	if err := json.Unmarshal(data, &cursor); err != nil {
+		return nil, fmt.Errorf("invalid cursor format: %w", err)
+	}
+
+	return &cursor, nil
+}
+
 func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID uint, angle uint) (*CursorPaginatedClimbsResponse, error) {
 	cacheKey := fmt.Sprintf("climbs-cursor-%s-%d-%s-%d-%d", cursor, pageSize, nameFilter, boardID, angle)
 	if x, found := c.Get(cacheKey); found {
@@ -61,17 +124,38 @@ func GetPaginatedClimbs(cursor string, pageSize int, nameFilter string, boardID 
 	nameFilter = strings.TrimSpace(nameFilter)
 	likePattern := "%" + nameFilter + "%"
 
+	// Decode the cursor
+	cursorData, err := decodeCursor(cursor)
+	if err != nil {
+		return nil, fmt.Errorf("invalid cursor: %w", err)
+	}
+
 	// Build the cursor condition for pagination
 	cursorCondition := ""
 	var args []interface{}
 
-	if cursor == "" {
+	if cursorData == nil {
 		// First page - no cursor condition
 		args = []interface{}{likePattern}
-	} else {
-		// Subsequent pages - filter by cursor (created_at timestamp)
+	} else if cursorData.Ascends == -1 {
+		// Legacy cursor - use old timestamp-based pagination for backward compatibility
 		cursorCondition = "AND c.created_at < ?"
-		args = []interface{}{likePattern, cursor}
+		args = []interface{}{likePattern, cursorData.CreatedAt}
+	} else {
+		// New composite cursor - create condition based on all sort fields
+		cursorCondition = `AND (
+			cs.ascensionist_count < ? OR
+			(cs.ascensionist_count = ? AND c.created_at < ?) OR
+			(cs.ascensionist_count = ? AND c.created_at = ? AND c.uuid < ?) OR
+			(cs.ascensionist_count = ? AND c.created_at = ? AND c.uuid = ? AND ps.id > ?)
+		)`
+		args = []interface{}{
+			likePattern,
+			cursorData.Ascends,                       // cs.ascensionist_count < ?
+			cursorData.Ascends, cursorData.CreatedAt, // (cs.ascensionist_count = ? AND c.created_at < ?)
+			cursorData.Ascends, cursorData.CreatedAt, cursorData.UUID, // (cs.ascensionist_count = ? AND c.created_at = ? AND c.uuid < ?)
+			cursorData.Ascends, cursorData.CreatedAt, cursorData.UUID, cursorData.ProductSizeID, // (cs.ascensionist_count = ? AND c.created_at = ? AND c.uuid = ? AND ps.id > ?)
+		}
 	}
 
 	// Join climb_stats for specific angle and select per-angle ascends
@@ -123,10 +207,11 @@ LIMIT ?`, angle, cursorCondition, optionalBoardFilterSQL(boardID))
 		return nil, fmt.Errorf("populate grades: %w", err)
 	}
 
-	// Get next cursor from the last item
+	// Get next cursor from the last item using composite cursor
 	var nextCursor string
 	if hasMore && len(climbs) > 0 {
-		nextCursor = climbs[len(climbs)-1].CreatedAt
+		lastClimb := climbs[len(climbs)-1]
+		nextCursor = encodeCursor(lastClimb.Ascends, lastClimb.CreatedAt, lastClimb.UUID, lastClimb.ProductSizeID)
 	}
 
 	resp := &CursorPaginatedClimbsResponse{
