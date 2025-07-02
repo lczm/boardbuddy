@@ -1,7 +1,7 @@
 import AngleSelector from "./AngleSelector";
 import type { Climb } from "../types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -95,36 +95,31 @@ export default function Sidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Problems</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="space-y-2 p-2">
+            <div className="space-y-1 p-1">
               {climbs.map((climb) => (
                 <Card
                   key={climb.uuid}
-                  className={`cursor-pointer transition-colors ${
+                  className={`p-2 cursor-pointer transition-colors ${
                     selectedClimb?.uuid === climb.uuid
                       ? "border-primary bg-primary/5"
                       : "hover:bg-muted/50"
                   }`}
                   onClick={() => onClimbSelect(climb)}
                 >
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      {climb.climb_name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Grade:
+                  <CardContent className="p-3 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium truncate">
+                        {climb.climb_name}
                       </span>
-                      <Badge variant="secondary">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs flex-shrink-0"
+                      >
                         {getGradeForAngle(climb, angle)}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Setter: {climb.setter_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Ascends: {climb.ascends}
+                    <p className="text-xs text-muted-foreground">
+                      {climb.setter_name} • {climb.ascends} ascends
                     </p>
                   </CardContent>
                 </Card>
