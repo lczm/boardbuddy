@@ -48,8 +48,9 @@ type CursorPaginatedClimbsResponse struct {
 
 // BoardOption represents a board (product_size) option for filtering climbs.
 type BoardOption struct {
-	ID   uint   `json:"id" example:"1"`                // Unique board identifier
-	Name string `json:"name" example:"Original 12x12"` // Human-readable board name
+	ID         uint   `json:"id" example:"1"`                              // Unique board identifier
+	Name       string `json:"name" example:"Original 12x12"`               // Human-readable board name
+	KilterName string `json:"kilter_name" example:"Kilter Board original"` // The board type
 }
 
 var c = cache.New(7*24*time.Hour, 10*time.Minute)
@@ -236,7 +237,8 @@ func GetBoardOptions() ([]BoardOption, error) {
 	query := `
 SELECT
   ps.id   AS id,
-  ps.name AS name
+  ps.name AS name,
+  p.name  AS kilter_name
 FROM product_sizes AS ps
 JOIN products AS p
   ON ps.product_id = p.id
