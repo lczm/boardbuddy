@@ -244,6 +244,7 @@ JOIN products AS p
   ON ps.product_id = p.id
 WHERE ps.is_listed = 1
   AND p.is_listed  = 1
+  AND p.name IN ('Kilter Board Homewall', 'Kilter Board Original')
 ORDER BY ps.position;`
 	if err := config.KilterDB.Raw(query).Scan(&boards).Error; err != nil {
 		return nil, fmt.Errorf("fetch boards: %w", err)
