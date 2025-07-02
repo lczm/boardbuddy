@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import AngleSelector from "./AngleSelector";
 import type { Board } from "../types";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BoardSelectorProps {
   boards: Board[];
@@ -48,9 +48,12 @@ export default function BoardSelector({
                 }
               >
                 <CardHeader>
-                  <CardTitle className="text-center">
-                    {board.kilter_name} {board.name}
-                  </CardTitle>
+                  <CardContent className="text-base text-center">
+                    {board.kilter_name}
+                  </CardContent>
+                  <CardContent className="text-sm text-center">
+                    {board.name}
+                  </CardContent>
                 </CardHeader>
               </Card>
             ))}
