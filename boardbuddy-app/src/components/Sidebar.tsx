@@ -95,7 +95,7 @@ export default function Sidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Problems</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="space-y-3 p-2">
+            <div className="space-y-2 p-2">
               {climbs.map((climb) => (
                 <Card
                   key={climb.uuid}
@@ -106,12 +106,12 @@ export default function Sidebar({
                   }`}
                   onClick={() => onClimbSelect(climb)}
                 >
-                  <CardHeader className="pb-2">
+                  <CardHeader>
                     <CardTitle className="text-base">
                       {climb.climb_name}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0 space-y-2">
+                  <CardContent>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
                         Grade:
